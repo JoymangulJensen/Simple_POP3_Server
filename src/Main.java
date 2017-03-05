@@ -8,7 +8,7 @@ class Main {
 
     private static final int NB_CONNEXION_MAX = 10;
 
-    private static final int SERVER_PORT = 8080;
+    private static final int SERVER_PORT = 110;
 
     private static List<Connexion> connexions = new ArrayList<>();
 

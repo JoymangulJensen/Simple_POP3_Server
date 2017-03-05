@@ -12,7 +12,7 @@ class Message {
 
     public String getArg() {return arg;}
 
-    static final int BUFFER_MAX_SIZE = 1000;
+    static final int BUFFER_MAX_SIZE = 1024;
 
     public Message() {}
 
