@@ -23,6 +23,7 @@ class Connexion implements Runnable {
     private List<Message> messagesSent = new ArrayList<>();
 
     private boolean stop = false;
+    private User user = null;
 
     Connexion(Socket socket) throws IOException {
         Socket clientSocket = socket;
@@ -51,23 +52,22 @@ class Connexion implements Runnable {
         Message message;
         switch ((message = receive()).getCommand()) {
             case APOP:
-                List<String> args = message.getArgs();
-                if (args.size() == 2) {
-                    String username = args.get(0);
-                    String password = args.get(1);
-                    try {
-                        mailBoxProcessor.authentication(username, password);
-                    } catch (InvalidArgumentException e) {
-                        if (nbTryConnexions ++ > NB_TRY) {
-                            System.out.println("Number of tries exceeded");
-                            this.stop();
-                        }
-                    }
-                }
+                this.apop(message);
                 break;
             case DELE:
+                this.send(this.dele(message));
                 break;
             case RETR:
+                this.retr(message);
+                break;
+            case STAT:
+                this.stat(message);
+                break;
+            case LIST:
+                this.list(message);
+                break;
+            case RSET:
+                this.send(this.rset(message));
                 break;
             case QUIT:
                 send(new Message(Command.OK));
@@ -83,6 +83,63 @@ class Connexion implements Runnable {
                 send(new Message(Command.ERROR, "Invalid command"));
         }
         return false;
+    }
+
+    private Message stat(Message message) {
+        // TODO
+        return null;
+    }
+
+    private Message list(Message message) {
+        // TODO
+        return null;
+    }
+
+    private Message rset(Message message) {
+        Message error = new Message("Error");
+        if (!checkUser()) {return error;}
+        if (message.getArgs().size() == 0) {
+            this.user.getMailBox().reset();
+            return new Message("OK");
+        }
+        return error;
+    }
+
+    private void retr(Message message) {
+        if (!checkUser()) {return;}
+
+    }
+
+    private Message dele(Message message) {
+        Message error = new Message("Error");
+        if (!checkUser()) {return error;}
+        if (message.getArgs().size() == 1) {
+            int idMessage = Integer.parseInt(message.getArgs().get(0));
+            if (this.user.getMailBox().delete(idMessage)) {
+                return new Message("OK message n°" + idMessage + " deleted!");
+            }
+        }
+        return error;
+    }
+
+    private void apop(Message message) {
+        List<String> args = message.getArgs();
+        if (args.size() == 2) {
+            String username = args.get(0);
+            String password = args.get(1);
+            try {
+                this.user = mailBoxProcessor.authentication(username, password);
+            } catch (InvalidArgumentException e) {
+                if (nbTryConnexions ++ > NB_TRY) {
+                    System.out.println("Number of tries exceeded");
+                    this.stop();
+                }
+            }
+        }
+    }
+
+    private boolean checkUser() {
+        return this.user == null;
     }
 
     /**

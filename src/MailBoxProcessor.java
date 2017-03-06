@@ -11,13 +11,18 @@ public class MailBoxProcessor {
 
     private List<User> users = new ArrayList<>();
 
+    private User user;
+
     public MailBoxProcessor() {
         this.buildUsers();
     }
 
-    public MailBox authentication(String username, String password) throws InvalidArgumentException {
+    public User authentication(String username, String password) throws InvalidArgumentException {
         User user = this.findUserByUsername(username);
-        if (user.getPassword() == password) return user.getMailBox();
+        if (user.getPassword() == password) {
+            this.user = user;
+            return user;
+        }
         throw new InvalidArgumentException(new String[]{"Password invalid"});
     }
 

@@ -19,4 +19,17 @@ public class MailBox {
         this.mails = MailParser.parse(this.folderName);
     }
 
+    public boolean delete(int idMessage) {
+        if (idMessage-1 >= mails.size()) {
+            return false;
+        }
+        mails.get(idMessage-1).setToDelete(true);
+        return true;
+    }
+
+    public void reset() {
+        for (Mail mail :mails) {
+            mail.setToDelete(false);
+        }
+    }
 }
