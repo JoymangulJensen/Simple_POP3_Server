@@ -1,3 +1,7 @@
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Created by Gaetan on 05/03/2017.
  * Class Message representing a command message
@@ -8,9 +12,11 @@ class Message {
 
     Command getCommand() {return command;}
 
-    private String arg = "";
+    private String argComplet = "";
 
-    public String getArg() {return arg;}
+    private List<String> args = new ArrayList<>();
+
+    public String getArgComplet() {return argComplet;}
 
     static final int BUFFER_MAX_SIZE = 1024;
 
@@ -26,7 +32,7 @@ class Message {
 
     Message(Command command, String arg) {
         this(command);
-        this.arg = arg;
+        this.argComplet = arg;
     }
 
     Message(Command command) {
@@ -36,7 +42,7 @@ class Message {
     private void build(String fullMessage) {
         String[] words = fullMessage.split(" ");
         command = this.findCommand(words[0].trim());
-        arg = fullMessage.replaceFirst(command.getText(), "").trim();
+        argComplet = fullMessage.replaceFirst(command.getText(), "").trim();
     }
 
     private Command findCommand(String word) {
@@ -50,7 +56,7 @@ class Message {
 
     @Override
     public String toString() {
-        return command.getText() + " " + arg;
+        return command.getText() + " " + argComplet;
     }
 
     byte[] getBytes() {
@@ -73,5 +79,9 @@ class Message {
             }
         }
         return true;
+    }
+
+    public List<String> getArgs() {
+        return Arrays.asList(argComplet.split(" "));
     }
 }

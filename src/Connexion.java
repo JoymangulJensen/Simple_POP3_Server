@@ -1,3 +1,5 @@
+import com.sun.javaws.exceptions.InvalidArgumentException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -11,8 +13,12 @@ import java.util.List;
  */
 class Connexion implements Runnable {
 
+    private static final int NB_TRY = 3;
     private InputStream is;
     private OutputStream os;
+    private MailBoxProcessor mailBoxProcessor = new MailBoxProcessor();
+
+    private int nbTryConnexions = 0;
 
     private List<Message> messagesSent = new ArrayList<>();
 
@@ -42,8 +48,22 @@ class Connexion implements Runnable {
      * @return boolean indicating if the program should stop or not
      */
     private boolean process() {
-        switch (receive().getCommand()) {
+        Message message;
+        switch ((message = receive()).getCommand()) {
             case APOP:
+                List<String> args = message.getArgs();
+                if (args.size() == 2) {
+                    String username = args.get(0);
+                    String password = args.get(1);
+                    try {
+                        mailBoxProcessor.authentication(username, password);
+                    } catch (InvalidArgumentException e) {
+                        if (nbTryConnexions ++ > NB_TRY) {
+                            System.out.println("Number of tries exceeded");
+                            this.stop();
+                        }
+                    }
+                }
                 break;
             case DELE:
                 break;
