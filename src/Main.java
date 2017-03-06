@@ -28,6 +28,8 @@ class Main {
     private static void launch() throws IOException {
         ServerSocket serverSocket = new ServerSocket(SERVER_PORT);
 
+        UserParser.parse();
+
         System.out.println("Server Running");
 
         boolean stop = false;

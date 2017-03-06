@@ -1,3 +1,6 @@
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +17,12 @@ public class User {
         this.username = username;
         this.password = password;
         this.mailBox = new MailBox(this.username);
+        try {
+            Files.createDirectories(Paths.get(MailBoxProcessor.MAILBOX_DIRECTORY +this.username));
+            System.out.println("test");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -35,5 +44,13 @@ public class User {
 
     public MailBox getMailBox() {
         return mailBox;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                '}';
     }
 }

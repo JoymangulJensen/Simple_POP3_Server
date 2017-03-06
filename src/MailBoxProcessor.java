@@ -7,6 +7,7 @@ import java.util.List;
  * Created by p1509413 on 06/03/2017.
  */
 public class MailBoxProcessor {
+    public final static String MAILBOX_DIRECTORY = "mailboxes/";
 
     private List<User> users = new ArrayList<>();
 
