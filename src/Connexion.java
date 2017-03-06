@@ -56,6 +56,8 @@ class Connexion implements Runnable {
                 // Send again the last message
                 send(messagesSent.get(messagesSent.size()-1));
                 break;
+            case DEFAULT:
+                System.out.println("default"); break;
             default:
                 // Command not known
                 send(new Message(Command.ERROR, "Invalid command"));
@@ -87,7 +89,7 @@ class Connexion implements Runnable {
         try {
             if(is.read(b) != -1) {
                 Message message = new Message(b);
-                System.out.println("Messace received : " + message);
+                System.out.println("Message received : " + message);
                 return message;
             }
         } catch (IOException e) {

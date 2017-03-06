@@ -10,7 +10,7 @@ public enum Command {
     APOP("APOP"),
     DELE("DELE"),
     RETR("RETR"),
-    QUIT(new String("QUIT")),
+    QUIT("QUIT"),
     DEFAULT(""),
     EXCEPTION("EXCEPTION"),
     ERROR("ERROR");
@@ -23,23 +23,12 @@ public enum Command {
         this.text = text;
     }
 
-    public static String[] names() {
-        Command[] commands = values();
-        String[] names = new String[commands.length];
-        for (int i = 0; i < commands.length; i++) {
-            names[i] = commands[i].text;
-        }
-        return names;
-    }
-
     public static HashSet<String> getEnums() {
 
-        HashSet<String> values = new HashSet<String>();
-
+        HashSet<String> values = new HashSet<>();
         for (Command c : Command.values()) {
             values.add(c.name());
         }
-
         return values;
     }
 }

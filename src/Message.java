@@ -35,13 +35,13 @@ class Message {
 
     private void build(String fullMessage) {
         String[] words = fullMessage.split(" ");
-        command = this.findCommand(words[0]);
+        command = this.findCommand(words[0].trim());
         arg = fullMessage.replaceFirst(command.getText(), "").trim();
     }
 
     private Command findCommand(String word) {
-        for (String command : Command.names()) {
-            if (word.equals(command)) {
+        for (String command : Command.getEnums()) {
+            if (stringEquals(word, command)) {
                 return Command.valueOf(command);
             }
         }
@@ -55,5 +55,23 @@ class Message {
 
     byte[] getBytes() {
         return this.toString().getBytes();
+    }
+
+    /**
+     * Compare 2 strings char by char
+     *
+     * @param s1 first string
+     * @param s2 second string
+     * @return true if equals, false else
+     */
+    private boolean stringEquals(String s1, String s2) {
+
+        if  (s1.length() != s2.length()) return false;
+        for (int i = 0; i < s1.length(); i ++) {
+            if (s1.charAt(i) != s2.charAt(i)) {
+                return false;
+            }
+        }
+        return true;
     }
 }
