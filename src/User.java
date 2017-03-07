@@ -19,7 +19,6 @@ public class User {
         this.mailBox = new MailBox(this.username);
         try {
             Files.createDirectories(Paths.get(MailBoxProcessor.MAILBOX_DIRECTORY +this.username));
-            System.out.println("test");
         } catch (IOException e) {
             e.printStackTrace();
         }

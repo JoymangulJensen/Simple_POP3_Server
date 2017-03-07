@@ -2,6 +2,7 @@ import com.sun.javaws.exceptions.InvalidArgumentException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by p1509413 on 06/03/2017.
@@ -13,13 +14,13 @@ public class MailBoxProcessor {
 
     private User user;
 
-    public MailBoxProcessor() {
+    MailBoxProcessor() {
         this.buildUsers();
     }
 
-    public User authentication(String username, String password) throws InvalidArgumentException {
+    User authentication(String username, String password) throws InvalidArgumentException {
         User user = this.findUserByUsername(username);
-        if (user.getPassword() == password) {
+        if (Objects.equals(user.getPassword(), password)) {
             this.user = user;
             return user;
         }
@@ -27,9 +28,7 @@ public class MailBoxProcessor {
     }
 
     private User findUserByUsername(String username) throws InvalidArgumentException {
-        for (User user : users) {
-            if (user.getUsername() == username) return user;
-        }
+        for (User user : users) {if (Objects.equals(user.getUsername(), username)) return user;}
         throw new InvalidArgumentException(new String[]{"User not found"});
     }
 

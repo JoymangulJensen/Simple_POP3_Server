@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +15,7 @@ import java.util.List;
 class Connexion implements Runnable {
 
     private static final int NB_TRY = 3;
+    private Socket clientSocket;
     private InputStream is;
     private OutputStream os;
     private MailBoxProcessor mailBoxProcessor = new MailBoxProcessor();
@@ -26,7 +28,7 @@ class Connexion implements Runnable {
     private User user = null;
 
     Connexion(Socket socket) throws IOException {
-        Socket clientSocket = socket;
+        clientSocket = socket;
         is = clientSocket.getInputStream();
         os = clientSocket.getOutputStream();
     }
@@ -35,9 +37,8 @@ class Connexion implements Runnable {
     public void run() {
         init();
         while (!stop) {
-            stop = process();
+            process();
         }
-        stop();
     }
 
     private void init() {
@@ -48,11 +49,16 @@ class Connexion implements Runnable {
      * Process the receptions of commands
      * @return boolean indicating if the program should stop or not
      */
-    private boolean process() {
+    private void process() {
         Message message;
         switch ((message = receive()).getCommand()) {
             case APOP:
-                this.apop(message);
+                Message result = this.apop(message);
+                if (result.getCommand() == Command.EXCEPTION) {
+                    this.stop(result.getArgComplet());
+                } else {
+                    send(result);
+                }
                 break;
             case DELE:
                 this.send(this.dele(message));
@@ -71,7 +77,7 @@ class Connexion implements Runnable {
                 break;
             case QUIT:
                 send(new Message(Command.OK));
-                return true;
+                this.stop("QUIT");
             case EXCEPTION:
                 // Send again the last message
                 send(messagesSent.get(messagesSent.size()-1));
@@ -82,7 +88,6 @@ class Connexion implements Runnable {
                 // Command not known
                 send(new Message(Command.ERROR, "Invalid command"));
         }
-        return false;
     }
 
     private Message stat(Message message) {
@@ -122,20 +127,24 @@ class Connexion implements Runnable {
         return error;
     }
 
-    private void apop(Message message) {
+    private Message apop(Message message) {
+        Message messageReturn = new Message(Command.ERROR, "Invalid Credentials");
         List<String> args = message.getArgs();
         if (args.size() == 2) {
             String username = args.get(0);
             String password = args.get(1);
             try {
                 this.user = mailBoxProcessor.authentication(username, password);
+                messageReturn = new Message(Command.OK);
             } catch (InvalidArgumentException e) {
-                if (nbTryConnexions ++ > NB_TRY) {
-                    System.out.println("Number of tries exceeded");
-                    this.stop();
+                System.out.println(e);
+                if (++nbTryConnexions > NB_TRY) {
+                    String error = "Number of tries exceeded";
+                    messageReturn = new Message(Command.EXCEPTION, error);
                 }
             }
         }
+        return messageReturn;
     }
 
     private boolean checkUser() {
@@ -151,6 +160,8 @@ class Connexion implements Runnable {
             os.write(message.getBytes());
             messagesSent.add(message);
             System.out.println("Message Sent : " + message);
+        } catch (SocketException se) {
+            this.stop("Socket Error");
         } catch (IOException e) {
             System.out.println("Could not write " + message);
             e.printStackTrace();
@@ -169,6 +180,8 @@ class Connexion implements Runnable {
                 System.out.println("Message received : " + message);
                 return message;
             }
+        } catch (SocketException se) {
+            this.stop("Socket Error");
         } catch (IOException e) {
             System.out.printf("Could not read from input stream");
             e.printStackTrace();
@@ -179,12 +192,17 @@ class Connexion implements Runnable {
     /**
      * End
      */
-    private void stop() {
-        try {
-            is.close();
-            os.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+    private void stop(String statut) {
+        if (!this.stop) {
+            this.stop = true;
+            try {
+                is.close();
+                os.close();
+                this.clientSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            System.out.println(statut + " - Connexion finished");
         }
     }
 }

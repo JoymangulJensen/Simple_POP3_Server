@@ -8,7 +8,7 @@ class Main {
 
     private static final int NB_CONNEXION_MAX = 10;
 
-    private static final int SERVER_PORT = 110;
+    private static final int SERVER_PORT = 1096;
 
     private static List<Connexion> connexions = new ArrayList<>();
 
@@ -30,13 +30,14 @@ class Main {
 
         UserParser.parse();
 
-        System.out.println("Server Running");
+        System.out.println("Server Running on port " + serverSocket.getLocalPort());
 
         boolean stop = false;
         while (connexions.size() < NB_CONNEXION_MAX && !stop) {
-            Socket s = serverSocket.accept();
-            Connexion connexion = new Connexion(s);
+            Socket socket = serverSocket.accept();
+            Connexion connexion = new Connexion(socket);
             connexions.add(connexion);
+            System.out.println("New Connexion n°" + connexions.size() + " " + socket);
             new Thread(connexion).start();
         }
 
