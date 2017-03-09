@@ -1,2 +1,3 @@
 gaetan@mail.com mdp
 matthieu@mail.com password
+jensen@mail.com qwerty

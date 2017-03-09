@@ -1,0 +1,6 @@
+Date: Thu, 9 Mar 2017 21:27:31 +0100
+Subject: This a subject
+From: Selwyn Joymangul <seljoymangul@gmail.com>
+To: Joymangul Jensen <jensen@mail1.txtmail.com>
+
+This is the mail content

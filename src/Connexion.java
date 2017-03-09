@@ -67,7 +67,8 @@ class Connexion implements Runnable {
                 this.retr(message);
                 break;
             case STAT:
-                this.stat(message);
+                Message messageStat = this.stat();
+                send(messageStat);
                 break;
             case LIST:
                 this.list(message);
@@ -90,9 +91,12 @@ class Connexion implements Runnable {
         }
     }
 
-    private Message stat(Message message) {
-        // TODO
-        return null;
+    private Message stat() {
+        if(this.checkUser())
+            return new Message(Command.ERROR, "Authentication needed");
+        String mailboxSize = String.valueOf(this.user.getMailBox().getMailBoxSize());
+        String nbMail = String.valueOf(this.user.getMailBox().getNbMail());
+        return new Message("OK " + nbMail + " " +mailboxSize);
     }
 
     private Message list(Message message) {
@@ -135,6 +139,7 @@ class Connexion implements Runnable {
             String password = args.get(1);
             try {
                 this.user = mailBoxProcessor.authentication(username, password);
+                this.user.setMailBox(new MailBox(this.user));
                 messageReturn = new Message(Command.OK);
             } catch (InvalidArgumentException e) {
                 System.out.println(e);
