@@ -3,42 +3,17 @@
  */
 public class Mail {
 
-    public Mail(String sender, String receiver, String content) {
-        this.sender = sender;
-        this.receiver = receiver;
-        this.content = content;
-    }
-
-    private String sender;
-
-    private String receiver;
-
     private String content;
-
     private boolean toDelete = false;
+    private int size;
 
-    public String getSender() {
-        return sender;
-    }
-
-    public void setSender(String sender) {
-        this.sender = sender;
-    }
-
-    public String getReceiver() {
-        return receiver;
-    }
-
-    public void setReceiver(String receiver) {
-        this.receiver = receiver;
+    public Mail(String content, int size) {
+        this.content = content;
+        this.size = size;
     }
 
     public String getContent() {
         return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
     }
 
     public boolean isToDelete() {
@@ -47,5 +22,21 @@ public class Mail {
 
     public void setToDelete(boolean toDelete) {
         this.toDelete = toDelete;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public void setSize(int size) {
+        this.size = size;
+    }
+
+    @Override
+    public String toString() {
+        return "Mail{" +
+                "content='" + content + '\'' +
+                ", size=" + size +
+                '}';
     }
 }

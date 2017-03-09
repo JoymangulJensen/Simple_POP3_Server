@@ -1,8 +1,6 @@
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by p1509413 on 06/03/2017.
@@ -16,9 +14,9 @@ public class User {
     public User(String username, String password) {
         this.username = username;
         this.password = password;
-        this.mailBox = new MailBox(this.username);
+        this.mailBox = null;
         try {
-            Files.createDirectories(Paths.get(MailBoxProcessor.MAILBOX_DIRECTORY +this.username));
+            Files.createDirectories(Paths.get(MailBox.MAILBOX_DIRECTORY +this.username));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -43,6 +41,10 @@ public class User {
 
     public MailBox getMailBox() {
         return mailBox;
+    }
+
+    public void setMailBox(MailBox mailBox) {
+        this.mailBox = mailBox;
     }
 
     @Override
