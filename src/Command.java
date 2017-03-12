@@ -6,8 +6,10 @@ import java.util.HashSet;
  */
 public enum Command {
 
-    OK("OK"),
+    OK("+OK"),
     APOP("APOP"),
+    USER("USER"),
+    PASS("PASS"),
     DELE("DELE"),
     RETR("RETR"),
     RSET("RSET"),
@@ -16,7 +18,7 @@ public enum Command {
     QUIT("QUIT"),
     DEFAULT(""),
     EXCEPTION("EXCEPTION"),
-    ERROR("ERROR");
+    ERROR("-ERR");
 
     private final String text;
 

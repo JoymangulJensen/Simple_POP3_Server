@@ -56,7 +56,7 @@ class Message {
 
     @Override
     public String toString() {
-        return command.getText() + " " + argComplet;
+        return command.getText() + " " + argComplet + "\r\n";
     }
 
     byte[] getBytes() {
@@ -82,6 +82,8 @@ class Message {
     }
 
     public List<String> getArgs() {
+        if(this.argComplet.isEmpty())
+            return new ArrayList<>();
         return Arrays.asList(argComplet.split(" "));
     }
 }

@@ -9,7 +9,7 @@ import java.util.Scanner;
  */
 public class UserParser {
 
-    private final static String USER_FILE_PATH = "users.txt";
+    private final static String USER_FILE_PATH = "resources/users.txt";
 
     public static List<User> parse() {
         String stringAllfile = null;

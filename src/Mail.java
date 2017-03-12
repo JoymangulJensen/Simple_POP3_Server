@@ -3,49 +3,41 @@
  */
 public class Mail {
 
-    public Mail(String sender, String receiver, String content) {
-        this.sender = sender;
-        this.receiver = receiver;
-        this.content = content;
-    }
-
-    private String sender;
-
-    private String receiver;
-
     private String content;
+    private int size;
+    private String fileName;
 
-    private boolean toDelete = false;
-
-    public String getSender() {
-        return sender;
-    }
-
-    public void setSender(String sender) {
-        this.sender = sender;
-    }
-
-    public String getReceiver() {
-        return receiver;
-    }
-
-    public void setReceiver(String receiver) {
-        this.receiver = receiver;
+    public Mail(String content, int size, String fileName) {
+        this.content = content;
+        this.size = size;
+        this.fileName = fileName;
     }
 
     public String getContent() {
         return content;
     }
 
-    public void setContent(String content) {
-        this.content = content;
+    public int getSize() {
+        return size;
     }
 
-    public boolean isToDelete() {
-        return toDelete;
+    public void setSize(int size) {
+        this.size = size;
     }
 
-    public void setToDelete(boolean toDelete) {
-        this.toDelete = toDelete;
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    @Override
+    public String toString() {
+        return "Mail{" +
+                "content='" + content + '\'' +
+                ", size=" + size +
+                '}';
     }
 }
