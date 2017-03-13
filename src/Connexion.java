@@ -1,3 +1,4 @@
+import com.sun.javafx.binding.StringConstant;
 import com.sun.javaws.exceptions.InvalidArgumentException;
 
 import java.io.IOException;
@@ -5,7 +6,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -41,8 +44,14 @@ class Connexion implements Runnable {
         }
     }
 
+    private String getTimeStamp()
+    {
+        Calendar now = Calendar.getInstance();
+        return "<" + String.valueOf(now.get(Calendar.YEAR)) + "." + String.valueOf(now.getTimeInMillis()) + "@cour.IPC.com>";
+    }
+
     private void init() {
-        send(new Message(Command.OK, "Server Running"));
+        send(new Message(Command.OK, " POP3 server ready " + this.getTimeStamp()));
     }
 
     /**
