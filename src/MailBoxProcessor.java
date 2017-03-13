@@ -15,6 +15,8 @@ public class MailBoxProcessor {
 
     private User user;
 
+    private final String SHARE_SECRET = "montagne";
+
     MailBoxProcessor() {
         this.buildUsers();
     }
