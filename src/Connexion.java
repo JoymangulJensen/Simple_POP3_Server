@@ -227,7 +227,7 @@ class Connexion implements Runnable {
                     Mail mail = this.user.getMailBox().getMail(mailIndex);
                     this.send(new Message(Command.OK, mail.getSize() + " octets"));
                     this.send(new Message(mail.getContent()));
-                    this.send(new Message("."));
+                    this.send(new Message(Command.END));
                 } catch (IndexOutOfBoundsException e) {
                     String nbMail = String.valueOf(this.user.getMailBox().getNbMail());
                     this.send(new Message(Command.ERROR, "no such message, only " + nbMail + " messages in maildrop"));
