@@ -3,6 +3,8 @@ import com.sun.javaws.exceptions.InvalidArgumentException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -12,18 +14,18 @@ import java.util.Objects;
  */
 public class MailBoxProcessor {
     private List<User> users = new ArrayList<>();
-
+    private String timestamp;
     private User user;
-
-    private final String SHARE_SECRET = "montagne";
 
     MailBoxProcessor() {
         this.buildUsers();
     }
 
-    User authentication(String username, String password) throws InvalidArgumentException {
+    User authentication(String username, String encodedPassword, String timestamp) throws InvalidArgumentException {
         User user = this.findUserByUsername(username);
-        if (Objects.equals(user.getPassword(), password)) {
+        this.timestamp = timestamp;
+        String userPassword = getEncodedPassword(user.getPassword());
+        if (Objects.equals(userPassword, encodedPassword)) {
             this.user = user;
             return user;
         }
@@ -42,6 +44,25 @@ public class MailBoxProcessor {
             if (Objects.equals(user.getUsername(), username)) return true;
         }
         throw new InvalidArgumentException(new String[]{"User not found"});
+    }
+
+    public String getEncodedPassword(String password)
+    {
+        MessageDigest messageDigest;
+        try {
+            String fullPhrase = this.timestamp + password;
+            messageDigest = MessageDigest.getInstance("MD5");
+            messageDigest.update(fullPhrase.getBytes());
+            byte[] messageDigestMD5 = messageDigest.digest();
+            StringBuilder stringBuffer = new StringBuilder();
+            for (byte bytes : messageDigestMD5) {
+                stringBuffer.append(String.format("%02x", bytes & 0xff));
+            }
+            return stringBuffer.toString();
+        } catch (NoSuchAlgorithmException exception) {
+            exception.printStackTrace();
+        }
+        return null;
     }
 
     /**

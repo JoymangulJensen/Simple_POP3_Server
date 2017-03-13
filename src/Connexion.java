@@ -1,4 +1,3 @@
-import com.sun.javafx.binding.StringConstant;
 import com.sun.javaws.exceptions.InvalidArgumentException;
 
 import java.io.IOException;
@@ -6,7 +5,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -29,6 +27,7 @@ class Connexion implements Runnable {
 
     private boolean stop = false;
     private User user = null;
+    private String timestamp = null;
 
     Connexion(Socket socket) throws IOException {
         clientSocket = socket;
@@ -51,7 +50,8 @@ class Connexion implements Runnable {
     }
 
     private void init() {
-        send(new Message(Command.OK, " POP3 server ready " + this.getTimeStamp()));
+        this.timestamp =this.getTimeStamp();
+        send(new Message(Command.OK, " POP3 server ready " + this.timestamp));
     }
 
     /**
@@ -136,7 +136,7 @@ class Connexion implements Runnable {
         if (args.size() == 1 && message.getCommand() == Command.PASS) {
             String password = args.get(0);
             try {
-                this.user = mailBoxProcessor.authentication(this.user.getUsername(), password);
+                this.user = mailBoxProcessor.authentication(this.user.getUsername(), password, timestamp);
                 this.user.setMailBox(new MailBox(this.user));
                 this.send(new Message(Command.OK));
                 nbTryConnexions = 3;
@@ -163,7 +163,7 @@ class Connexion implements Runnable {
             String username = args.get(0);
             String password = args.get(1);
             try {
-                this.user = mailBoxProcessor.authentication(username, password);
+                this.user = mailBoxProcessor.authentication(username, password, timestamp);
                 this.user.setMailBox(new MailBox(this.user));
                 messageReturn = new Message(Command.OK);
             } catch (InvalidArgumentException e) {
