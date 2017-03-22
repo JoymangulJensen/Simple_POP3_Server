@@ -1,3 +1,4 @@
+
 # Created by .ignore support plugin (hsz.mobi)
 
 # Log file
@@ -23,3 +24,8 @@ hs_err_pid*
 /.idea/workspace.xml
 
 out/
+.idea/inspectionProfiles/
+mailboxes/gaetan@mail.com/
+mailboxes/matthieu@mail.com/
+mailboxes/jensen@mail.com/mail1.txt
+mailboxes/backup/

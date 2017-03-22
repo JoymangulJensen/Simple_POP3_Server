@@ -4,24 +4,17 @@
 public class Mail {
 
     private String content;
-    private boolean toDelete = false;
     private int size;
+    private String fileName;
 
-    public Mail(String content, int size) {
+    public Mail(String content, int size, String fileName) {
         this.content = content;
         this.size = size;
+        this.fileName = fileName;
     }
 
     public String getContent() {
         return content;
-    }
-
-    public boolean isToDelete() {
-        return toDelete;
-    }
-
-    public void setToDelete(boolean toDelete) {
-        this.toDelete = toDelete;
     }
 
     public int getSize() {
@@ -30,6 +23,14 @@ public class Mail {
 
     public void setSize(int size) {
         this.size = size;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 
     @Override

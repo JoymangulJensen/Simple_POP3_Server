@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -26,6 +27,7 @@ class Connexion implements Runnable {
 
     private boolean stop = false;
     private User user = null;
+    private String timestamp = null;
 
     Connexion(Socket socket) throws IOException {
         clientSocket = socket;
@@ -41,12 +43,20 @@ class Connexion implements Runnable {
         }
     }
 
+    private String getTimeStamp()
+    {
+        Calendar now = Calendar.getInstance();
+        return "<" + String.valueOf(now.get(Calendar.YEAR)) + "." + String.valueOf(now.getTimeInMillis()) + "@cour.IPC.com>";
+    }
+
     private void init() {
-        send(new Message(Command.OK, "Server Running"));
+        this.timestamp =this.getTimeStamp();
+        send(new Message(Command.OK, " POP3 server ready " + this.timestamp));
     }
 
     /**
      * Process the receptions of commands
+     *
      * @return boolean indicating if the program should stop or not
      */
     private void process() {
@@ -60,75 +70,90 @@ class Connexion implements Runnable {
                     send(result);
                 }
                 break;
+            case USER:
+                this.user(message);
+                break;
             case DELE:
-                this.send(this.dele(message));
+                this.dele(message);
                 break;
             case RETR:
                 this.retr(message);
                 break;
             case STAT:
-                Message messageStat = this.stat();
-                send(messageStat);
+                this.stat();
                 break;
             case LIST:
                 this.list(message);
                 break;
             case RSET:
-                this.send(this.rset(message));
+                this.rset();
                 break;
             case QUIT:
-                send(new Message(Command.OK));
-                this.stop("QUIT");
+                this.quit();
+                break;
             case EXCEPTION:
                 // Send again the last message
-                send(messagesSent.get(messagesSent.size()-1));
+                send(messagesSent.get(messagesSent.size() - 1));
                 break;
             case DEFAULT:
-                System.out.println("default"); break;
+                System.out.println("default");
+                break;
             default:
                 // Command not known
                 send(new Message(Command.ERROR, "Invalid command"));
         }
     }
 
-    private Message stat() {
-        if(this.checkUser())
-            return new Message(Command.ERROR, "Authentication needed");
-        String mailboxSize = String.valueOf(this.user.getMailBox().getMailBoxSize());
-        String nbMail = String.valueOf(this.user.getMailBox().getNbMail());
-        return new Message("OK " + nbMail + " " +mailboxSize);
-    }
-
-    private Message list(Message message) {
-        // TODO
-        return null;
-    }
-
-    private Message rset(Message message) {
-        Message error = new Message("Error");
-        if (!checkUser()) {return error;}
-        if (message.getArgs().size() == 0) {
-            this.user.getMailBox().reset();
-            return new Message("OK");
-        }
-        return error;
-    }
-
-    private void retr(Message message) {
-        if (!checkUser()) {return;}
-
-    }
-
-    private Message dele(Message message) {
-        Message error = new Message("Error");
-        if (!checkUser()) {return error;}
-        if (message.getArgs().size() == 1) {
-            int idMessage = Integer.parseInt(message.getArgs().get(0));
-            if (this.user.getMailBox().delete(idMessage)) {
-                return new Message("OK message n°" + idMessage + " deleted!");
+    private void user(Message message) {
+        Message messageReturn = new Message(Command.ERROR, "Invalid Credentials");
+        List<String> args = message.getArgs();
+        if (args.size() == 1) {
+            String username = args.get(0);
+            try {
+                if (this.mailBoxProcessor.usernameExists(username)) {
+                    this.user = new User(username, null);
+                    this.send(new Message(Command.OK, username + " is a real hoopy frood"));
+                    do {
+                        Message passwordmsg = this.receive();
+                        passwordmsg = this.receive(); // We have two receive() because putty send a blank after each command
+                        this.pass(passwordmsg);
+                    } while (nbTryConnexions < NB_TRY);
+                }
+            } catch (InvalidArgumentException e) {
+                System.err.println(e);
+                this.send(new Message(Command.ERROR, e.getRealMessage()));
+                if (++nbTryConnexions > NB_TRY) {
+                    String error = "Number of tries exceeded";
+                    this.user = null;
+                    this.send(new Message(Command.EXCEPTION, error));
+                }
             }
         }
-        return error;
+    }
+
+    private void pass(Message message) {
+        List<String> args = message.getArgs();
+        if (args.size() == 1 && message.getCommand() == Command.PASS) {
+            String password = args.get(0);
+            try {
+                this.user = mailBoxProcessor.authentication(this.user.getUsername(), password, timestamp);
+                this.user.setMailBox(new MailBox(this.user));
+                this.send(new Message(Command.OK));
+                nbTryConnexions = 3;
+            } catch (InvalidArgumentException e) {
+                System.out.println(e);
+                this.send(new Message(Command.ERROR, e.toString()));
+                if (++nbTryConnexions > NB_TRY) {
+                    String error = "Number of tries exceeded";
+                    this.user = null;
+                    this.send(new Message(Command.EXCEPTION, error));
+                }
+            }
+        } else {
+            nbTryConnexions = 3;
+            this.user = null;
+            this.send(new Message(Command.EXCEPTION, "Cannot use command"));
+        }
     }
 
     private Message apop(Message message) {
@@ -138,7 +163,7 @@ class Connexion implements Runnable {
             String username = args.get(0);
             String password = args.get(1);
             try {
-                this.user = mailBoxProcessor.authentication(username, password);
+                this.user = mailBoxProcessor.authentication(username, password, timestamp);
                 this.user.setMailBox(new MailBox(this.user));
                 messageReturn = new Message(Command.OK);
             } catch (InvalidArgumentException e) {
@@ -152,12 +177,109 @@ class Connexion implements Runnable {
         return messageReturn;
     }
 
-    private boolean checkUser() {
-        return this.user == null;
+    private void list(Message message) {
+        if (this.isAuthorise()) {
+            if (message.getArgs().size() == 0) {
+                List<Mail> mails = this.user.getMailBox().getMails();
+                String mailboxSize = String.valueOf(this.user.getMailBox().getMailBoxSize());
+                String nbMail = String.valueOf(this.user.getMailBox().getNbMail());
+                this.send(new Message("+OK " + nbMail + " messages (" + mailboxSize + " octets)"));
+                for (int i = 0; i < mails.size(); i++) {
+                    this.send(new Message(String.valueOf(i + 1) + " " + String.valueOf(mails.get(i).getSize())));
+                }
+            } else {
+                int mailIndex = Integer.parseInt(message.getArgs().get(0));
+                try {
+                    int mailSize = this.user.getMailBox().getMailBoxSize(mailIndex);
+                    this.send(new Message(String.valueOf(mailIndex) + " " + String.valueOf(mailSize)));
+                } catch (IndexOutOfBoundsException e) {
+                    String nbMail = String.valueOf(this.user.getMailBox().getNbMail());
+                    this.send(new Message(Command.ERROR, "no such message, only " + nbMail + " messages in maildrop"));
+                }
+            }
+        }
+
+    }
+
+    private void stat() {
+        if (this.isAuthorise()) {
+            String mailboxSize = String.valueOf(this.user.getMailBox().getMailBoxSize());
+            String nbMail = String.valueOf(this.user.getMailBox().getNbMail());
+            this.send(new Message(Command.OK, nbMail + " " + mailboxSize));
+        }
+    }
+
+    private void rset() {
+        if (this.isAuthorise()) {
+            this.user.getMailBox().reset();
+            String mailboxSize = String.valueOf(this.user.getMailBox().getMailBoxSize());
+            String nbMail = String.valueOf(this.user.getMailBox().getNbMail());
+            this.send(new Message(Command.OK, nbMail + " messages (" + mailboxSize + " octets)"));
+        }
+    }
+
+    private void retr(Message message) {
+        Message error = new Message(Command.ERROR, "Error");
+        if (this.isAuthorise()) {
+            int mailIndex = Integer.parseInt(message.getArgs().get(0));
+            if (message.getArgs().size() > 0) {
+                try {
+                    Mail mail = this.user.getMailBox().getMail(mailIndex);
+                    this.send(new Message(Command.OK, mail.getSize() + " octets"));
+                    this.send(new Message(mail.getContent()));
+                    this.send(new Message(Command.END));
+                } catch (IndexOutOfBoundsException e) {
+                    String nbMail = String.valueOf(this.user.getMailBox().getNbMail());
+                    this.send(new Message(Command.ERROR, "no such message, only " + nbMail + " messages in maildrop"));
+                }
+            } else {
+                this.send(error);
+            }
+        }
+    }
+
+    private void dele(Message message) {
+        Message error = new Message("Error");
+        if (this.isAuthorise()) {
+            if (message.getArgs().size() > 0) {
+                int mailIndex = Integer.parseInt(message.getArgs().get(0));
+                try {
+                    this.user.getMailBox().delete(mailIndex);
+                    this.send(new Message(Command.OK, "message 1 deleted"));
+                } catch (IndexOutOfBoundsException e) {
+                    String nbMail = String.valueOf(this.user.getMailBox().getNbMail());
+                    this.send(new Message(Command.ERROR, "no such message, only " + nbMail + " messages in maildrop"));
+                }
+            } else {
+                this.send(error);
+            }
+        }
+
+    }
+
+    private void quit() {
+        if (this.isAuthorise()) {
+            if (this.mailBoxProcessor.updateMailBox(this.user.getMailBox())) {
+                this.send(new Message(Command.OK));
+                this.stop("QUIT");
+            } else {
+                this.send(new Message(Command.ERROR, "Cannot update mailbox"));
+            }
+        }
+        this.stop("QUIT");
+    }
+
+    private boolean isAuthorise() {
+        if (this.user == null) {
+            this.send(new Message(Command.ERROR, "Authentication needed"));
+            return false;
+        }
+        return true;
     }
 
     /**
      * Send a message over TCP
+     *
      * @param message Message to sent
      */
     private void send(Message message) {
@@ -175,12 +297,13 @@ class Connexion implements Runnable {
 
     /**
      * Receive a message over TCP
+     *
      * @return the message received
      */
     private Message receive() {
         byte b[] = new byte[Message.BUFFER_MAX_SIZE];
         try {
-            if(is.read(b) != -1) {
+            if (is.read(b) != -1) {
                 Message message = new Message(b);
                 System.out.println("Message received : " + message);
                 return message;

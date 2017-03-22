@@ -22,15 +22,17 @@ public class MailParser {
             paths.forEach(filePath -> {
                 if (Files.isRegularFile(filePath)) {
                     File file = new File(String.valueOf(filePath));
+                    System.out.println(String.valueOf(filePath));
                     // Read each mail in the user folder
                     try {
                         Scanner scanner = new Scanner(file);
                         String mailContent = "";
                         while (scanner.hasNextLine()) {
-                            mailContent += scanner.nextLine() + "\n";
+                            mailContent += scanner.nextLine() + "\r\n";
                         }
-                        Mail mail =  new Mail(mailContent, (int)file.length());
+                        Mail mail =  new Mail(mailContent, (int)file.length(), String.valueOf(filePath));
                         mails.add(mail);
+                        scanner.close();
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     }
