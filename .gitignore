@@ -29,3 +29,5 @@ mailboxes/gaetan@mail.com/
 mailboxes/matthieu@mail.com/
 mailboxes/jensen@mail.com/mail1.txt
 mailboxes/backup/
+/target/
+target/

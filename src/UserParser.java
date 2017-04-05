@@ -9,7 +9,9 @@ import java.util.Scanner;
  */
 public class UserParser {
 
-    private final static String USER_FILE_PATH = "resources/users.txt";
+    private final static String USER_FILE_PATH = new StringBuilder()
+            .append(System.getProperty("user.home"))
+            .append("/IPC/users.txt").toString();
 
     public static List<User> parse() {
         String stringAllfile = null;
