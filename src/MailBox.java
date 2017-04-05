@@ -5,7 +5,10 @@ import java.util.List;
  * Created by p1509413 on 06/03/2017.
  */
 public class MailBox {
-    public final static String MAILBOX_DIRECTORY = "mailboxes/";
+    public final static String MAILBOX_DIRECTORY = new StringBuilder()
+            .append(System.getProperty("user.home"))
+            .append("/IPC/mailboxes/").toString();
+
     private List<Mail> mails = new ArrayList<>();
     private List<Mail> mailsToDelete = new ArrayList<>();
     private User user;
