@@ -6,6 +6,7 @@ public class Mail {
     private String content;
     private int size;
     private String fileName;
+    private boolean toDelete;
 
     public Mail(String content, int size, String fileName) {
         this.content = content;
@@ -36,8 +37,16 @@ public class Mail {
     @Override
     public String toString() {
         return "Mail{" +
-                "content='" + content + '\'' +
-                ", size=" + size +
-                '}';
+//                "content='" + content + '\'' +
+                ", size=" + size + "toDelete=" + toDelete +
+                '}' + "\n\n";
+    }
+
+    public void setToDelete(boolean toDelete) {
+        this.toDelete = toDelete;
+    }
+
+    public boolean isToDelete() {
+        return toDelete;
     }
 }

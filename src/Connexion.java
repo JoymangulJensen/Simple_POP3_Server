@@ -249,7 +249,7 @@ class Connexion implements Runnable {
                 int mailIndex = Integer.parseInt(message.getArgs().get(0));
                 try {
                     this.user.getMailBox().delete(mailIndex);
-                    this.send(new Message(Command.OK, "message 1 deleted"));
+                    this.send(new Message(Command.OK, "Message " + mailIndex + " deleted"));
                 } catch (IndexOutOfBoundsException e) {
                     String nbMail = String.valueOf(this.user.getMailBox().getNbMail());
                     this.send(new Message(Command.ERROR, "no such message, only " + nbMail + " messages in maildrop"));

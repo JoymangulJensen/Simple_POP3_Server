@@ -10,15 +10,10 @@ public class MailBox {
             .append("/IPC/mailboxes/").toString();
 
     private List<Mail> mails = new ArrayList<>();
-    private List<Mail> mailsToDelete = new ArrayList<>();
     private User user;
 
     public List<Mail> getMails() {
         return mails;
-    }
-
-    public List<Mail> getMailsToDelete() {
-        return mailsToDelete;
     }
 
     public User getUser() {
@@ -40,16 +35,13 @@ public class MailBox {
      * @throws IndexOutOfBoundsException
      */
     public void delete(int index) throws IndexOutOfBoundsException{
-        index--;
-        this.mailsToDelete.add(this.mails.get(index));
-        this.mails.remove(index);
+        this.mails.get(index - 1).setToDelete(true);
     }
 
     public void reset() {
-        for (Mail mail : mailsToDelete) {
-            this.mails.add(mail);
+        for (Mail mail : mails) {
+            mail.setToDelete(false);
         }
-        this.mailsToDelete = new ArrayList<>();
     }
 
     /**
@@ -95,7 +87,7 @@ public class MailBox {
      * @throws IndexOutOfBoundsException : Exception when index is invalid
      */
     public Mail getMail(int index)throws IndexOutOfBoundsException {
-        return this.mails.get(--index);  // --index is here because the client mail index starts with 1
+        return this.mails.get(index - 1);  // --index is here because the client mail index starts with 1
     }
 
     @Override

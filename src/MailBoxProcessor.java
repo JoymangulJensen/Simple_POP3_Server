@@ -70,16 +70,19 @@ public class MailBoxProcessor {
      * @param mailbox the mailbox to update
      * @return Noolean whether or not update was successful
      */
-    public Boolean updateMailBox(MailBox mailbox) {
-        for (Mail mail: mailbox.getMailsToDelete()) {
+    public boolean updateMailBox(MailBox mailbox) {
+        System.out.println("here");
+        System.out.println(mailbox.getMails());
+        for (Mail mail: mailbox.getMails()) {
             try {
-                Files.delete(Paths.get(mail.getFileName()));
+                if (mail.isToDelete())
+                    Files.delete(Paths.get(mail.getFileName()));
             } catch (IOException x) {
                 System.err.println(x);
-                return Boolean.FALSE;
+                return false;
             }
         }
-        return Boolean.TRUE;
+        return true;
     }
 
     private void buildUsers() {
