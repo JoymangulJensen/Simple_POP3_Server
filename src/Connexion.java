@@ -180,6 +180,7 @@ class Connexion implements Runnable {
     private void list(Message message) {
         if (this.isAuthorise()) {
             if (message.getArgs().size() == 0) {
+                this.user.setMailBox(new MailBox(this.user));
                 List<Mail> mails = this.user.getMailBox().getMails();
                 String mailboxSize = String.valueOf(this.user.getMailBox().getMailBoxSize());
                 String nbMail = String.valueOf(this.user.getMailBox().getNbMail());
@@ -188,6 +189,7 @@ class Connexion implements Runnable {
                     this.send(new Message(String.valueOf(i + 1) + " " + String.valueOf(mails.get(i).getSize())));
                 }
             } else {
+                this.user.setMailBox(new MailBox(this.user));
                 int mailIndex = Integer.parseInt(message.getArgs().get(0));
                 try {
                     int mailSize = this.user.getMailBox().getMailBoxSize(mailIndex);
@@ -203,6 +205,7 @@ class Connexion implements Runnable {
 
     private void stat() {
         if (this.isAuthorise()) {
+            this.user.setMailBox(new MailBox(this.user));
             String mailboxSize = String.valueOf(this.user.getMailBox().getMailBoxSize());
             String nbMail = String.valueOf(this.user.getMailBox().getNbMail());
             this.send(new Message(Command.OK, nbMail + " " + mailboxSize));
@@ -221,6 +224,7 @@ class Connexion implements Runnable {
     private void retr(Message message) {
         Message error = new Message(Command.ERROR, "Error");
         if (this.isAuthorise()) {
+            this.user.setMailBox(new MailBox(this.user));
             int mailIndex = Integer.parseInt(message.getArgs().get(0));
             if (message.getArgs().size() > 0) {
                 try {
